@@ -5,39 +5,57 @@ import org.apache.logging.log4j.Logger;
 
 public class Account {
 
-    private static final Logger logger = LogManager.getLogger(Account.class);
+	private static final Logger logger = LogManager.getLogger(Account.class);
+	
+	private float monthlyInterestRate;
+	private float monthlyFee;
+	
+	private String accountNumber;
+	private String accountType;
+	private float balance;
+	
+	private static final String CHECKING = "Checking";
+	private static final String SAVINGS = "Savings";
+	private float nexMonthValue;
 
-    private static float monthlyInterestRate = 1.01f;
-    private static float monthlyFee = 0.0f;
 
-    private String accountNumber;
-    private String accountType;
-    private float balance;
+	public Account(String accountNumber, String accountType, float balance) {
+		this.accountNumber = accountNumber;
+		this.accountType = accountType;
+		this.balance = balance;
 
-    public Account(String accountNumber, String accountType, float balance) {
-        this.accountNumber = accountNumber;
-        this.accountType = accountType;
-        this.balance = balance;
-        if (accountType == "Checking") {
-            monthlyInterestRate = 1.0f;
-        }
-    }
+		if (accountType.equals(SAVINGS)) {
+			monthlyInterestRate = 1.0f;
+		}
+	}  
 
-    public Account(String accountNumber, String accountType) {
-        new Account(accountNumber, accountType, 0.0f);
-    }
+	public Account(String accountNumber, String accountType) {
+		this.accountNumber = accountNumber;
+		this.accountType = accountType;
+		this.balance =  0.0f;
 
-    public Account(String accountNumber) {
-        new Account(accountNumber, "Savings", 0.0f);
-    }
+		if (accountType.equals(SAVINGS)) {
+			monthlyInterestRate = 1.0f;
+		}
+	}
 
-    public float valueNextMonth() {
-        return (balance * monthlyInterestRate) - monthlyFee;
-    }
+	public Account(String accountNumber) {
+		this.accountNumber = accountNumber;
+		this.accountType = SAVINGS;
+		this.balance =  0.0f;
+		monthlyInterestRate = 1.0f;
+	}
 
-    @Override
+
+
+	public float valueNextMonth() {
+		return balance+(((balance * monthlyInterestRate)/100) - monthlyFee);
+	}		 
+
+   
+	@Override
     public String toString() {
-        if (accountType == "Checking") {
+      if (accountType.equals(CHECKING)) {
             if (monthlyFee == 0.0f) {
                 return "No fee checking account #" + accountNumber;
             } else {
@@ -60,51 +78,100 @@ public class Account {
         }
     }
 
-    public void deposit(float amount) {
-        balance += amount;
-    }
+	
+	public void deposit(float amount) {
+		balance += amount;
+	}	
 
-    public void withdraw(float amount) {
-        balance -= amount;
-    }
+   
+	public float withdraw(float amount) {
+		float overdrawnAmt = balance-amount;
+		if(accountType.equals(CHECKING) && overdrawnAmt >= -100){
+			balance -= amount;
+		}else if(accountType.equals(SAVINGS) && overdrawnAmt >= 0){
+			balance -= amount;
+		}else{
+			logger.info("Not having sufficient balance to withdraw!!! Your current account Balance is: "+ balance);
+			overdrawnAmt=0;
+		}
+		return overdrawnAmt;
+	}														
 
-    public float getMonthlyInterestRate() {
-        return monthlyInterestRate;
-    }
+	public float getMonthlyInterestRate() {
+		return monthlyInterestRate;
+	}
 
-    public void setMonthlyInterestRate(float monthlyInterestRate) {
-        this.monthlyInterestRate = monthlyInterestRate;
-    }
+	public void setMonthlyInterestRate(float monthlyInterestRate) {
+		this.monthlyInterestRate = monthlyInterestRate;
+	}
 
-    public float getMonthlyFee() {
-        return monthlyFee;
-    }
+	public float getMonthlyFee() {
+		return monthlyFee;
+	}
 
-    public void setMonthlyFee(float monthlyFee) {
-        this.monthlyFee = monthlyFee;
-    }
+	public void setMonthlyFee(float monthlyFee) {
+		this.monthlyFee = monthlyFee;
+	}
 
-    public String getAccountNumber() {
-        return accountNumber;
-    }
+	public String getAccountNumber() {
+		return accountNumber;
+	}
 
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
 
-    public String getAccountType() {
-        return accountType;
-    }
+	public String getAccountType() {
+		return accountType;
+	}
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
-    }
+	public void setAccountType(String accountType) {
+		this.accountType = accountType;
+	}
 
-    public float getBalance() {
-        return balance;
-    }
+	public float getBalance() {
+		return balance;
+	}
 
-    void setBalance(float balance) {
-        this.balance = balance;
-    }
+	void setBalance(float balance) {
+		this.balance = balance;
+	}
+
+	public float getNextMonthValue() {
+		return nexMonthValue;
+	}
+
+	public void setNexMonthValue(float nexMonthValue) {
+		this.nexMonthValue = nexMonthValue;
+	}
+
+	
+	public float calNextMonthValue() {
+		setNexMonthValue(balance+(((balance * monthlyInterestRate)/100) - monthlyFee));
+		return getNextMonthValue();
+	}
+	
+	@Override
+	public int hashCode() {
+		return accountNumber.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		if (accountNumber == null) {
+			if (other.accountNumber != null)
+				return false;
+		} else if (!accountNumber.equals(other.accountNumber))
+			return false;
+		return true;
+	}
+
+
 }
